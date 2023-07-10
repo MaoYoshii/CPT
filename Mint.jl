@@ -16,7 +16,7 @@ end
 
 Base.:<<(a::MInt, b::Int) = MInt(value(a)<<b)
 
-Base.:>>(a::MInt, b::Int) = _unsafe_mint(value(a)>>b)
+Base.:>>(a::MInt, b::Int) = _unsafe_mint(value(a)>>b,MOD)
 
 Base.:+(a::MInt, b::Int) = MInt(value(a)+b)
 Base.:+(a::Int, b::MInt) = MInt(a+value(b))
