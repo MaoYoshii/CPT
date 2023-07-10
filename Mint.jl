@@ -1,16 +1,13 @@
-const MOD = 998244353
-struct MInt{T} <: Integer
+const MOD = 1000000007
+struct MInt{T,S} <: Integer
     MInt :: T
-    MOD :: typeof(MOD)
-    function MInt(a::T) where T
-        if 0 ≤ a < MOD
-            new{T}(a,MOD)
-        else
-            new{T}(mod(a,MOD),MOD)
-        end
+    MOD :: S
+    global function _unsafe_mint(a::T,MOD::S) where {T,S}
+         new{T,S}(a,MOD)
     end
 end
-new(a) = new{typeof(a)}(a)
+MInt(a,MOD) = _unsafe_mint( ifelse(a<0,a%MOD+MOD,a%MOD),MOD)
+MInt(a) = MInt(a,MOD)
 value(x::MInt) = x.MInt
 
 function Base.show(io::IO, x::MInt)
@@ -19,32 +16,18 @@ end
 
 Base.:<<(a::MInt, b::Int) = MInt(value(a)<<b)
 
-Base.:>>(a::MInt, b::Int) = MInt(value(a)>>b)
+Base.:>>(a::MInt, b::Int) = _unsafe_mint(value(a)>>b)
 
 Base.:+(a::MInt, b::Int) = MInt(value(a)+b)
 Base.:+(a::Int, b::MInt) = MInt(a+value(b))
-function Base.:+(a::MInt, b::MInt)
-    c = value(a)+value(b)
-    if c > MOD
-        return MInt(c-MOD)
-    else
-        return MInt(c)
-    end
-end
+Base.:+(a::MInt, b::MInt) = _unsafe_mint( value(a)+value(b) |> x -> ifelse(x > MOD, x-MOD,x),MOD)
 Base.:-(a::MInt, b::Int) = MInt(value(a)-b)
 Base.:-(a::Int, b::MInt) = MInt(a-value(b))
-function Base.:-(a::MInt, b::MInt)
-    c = value(a)-value(b)
-    if c < 0
-        return MInt(c+MOD)
-    else
-        return MInt(c)
-    end
-end
+Base.:+(a::MInt, b::MInt) = _unsafe_mint( value(a)-value(b) |> x -> ifelse(x < 0, x+MOD,x),MOD)
 
 Base.:*(a::MInt, b::Int) = MInt(value(a)*b)
 Base.:*(a::Int, b::MInt) = MInt(a*value(b))
-Base.:*(a::MInt, b::MInt) = MInt(value(a)*value(b))
+Base.:*(a::MInt, b::MInt) = _unsafe_mint( value(a)*value(b)%MOD,MOD)
 
 Base.:^(a::MInt, b::Int) = if b == 0
     return MInt(1)
@@ -84,12 +67,7 @@ else
     return c*c
 end
 
-Base.inv(a::MInt;prime = true) = if prime
-    a^(MOD-2)
-else
-    d,u,v = gcdx(value(a),MOD)
-    return MInt(u)
-end
+Base.inv(a::MInt) = a^(MOD-2)
 
 Base.:÷(a::MInt, b::Int) = value(a)*inv(MInt(b))
 Base.:÷(a::Int, b::MInt) = a*inv(b)
